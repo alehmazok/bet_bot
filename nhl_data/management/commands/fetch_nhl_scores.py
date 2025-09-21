@@ -3,7 +3,7 @@ from datetime import date, datetime
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from django.db import transaction
-from nhl_data.models import Team, Venue, Game, TVBroadcast, GameFetchLog
+from nhl_data.models import Game
 
 
 class Command(BaseCommand):
@@ -36,13 +36,6 @@ class Command(BaseCommand):
         # Build the API URL
         api_url = f"https://api-web.nhle.com/v1/score/{fetch_date.strftime('%Y-%m-%d')}"
         
-        # Initialize fetch log
-        fetch_log = GameFetchLog.objects.create(
-            fetch_date=fetch_date,
-            api_url=api_url,
-            success=False
-        )
-
         try:
             # Fetch data from NHL API
             self.stdout.write(f"Fetching data from: {api_url}")
@@ -56,8 +49,6 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.WARNING(f"No games found for {fetch_date}")
                 )
-                fetch_log.success = True
-                fetch_log.save()
                 return
 
             processed_count = 0
@@ -75,11 +66,6 @@ class Command(BaseCommand):
                         )
                         continue
 
-            # Update fetch log
-            fetch_log.success = True
-            fetch_log.games_processed = processed_count
-            fetch_log.save()
-
             self.stdout.write(
                 self.style.SUCCESS(
                     f'Successfully processed {processed_count} games for {fetch_date}'
@@ -88,13 +74,9 @@ class Command(BaseCommand):
 
         except requests.RequestException as e:
             error_msg = f"Failed to fetch data from NHL API: {str(e)}"
-            fetch_log.error_message = error_msg
-            fetch_log.save()
             raise CommandError(error_msg)
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
-            fetch_log.error_message = error_msg
-            fetch_log.save()
             raise CommandError(error_msg)
 
     def _process_game(self, game_data, force_update=False):
@@ -115,39 +97,51 @@ class Command(BaseCommand):
             game_data['startTimeUTC'].replace('Z', '+00:00')
         )
 
-        # Process teams
-        home_team = self._get_or_create_team(game_data['homeTeam'])
-        away_team = self._get_or_create_team(game_data['awayTeam'])
+        # Extract home team data
+        home_team_data = game_data['homeTeam']
+        home_team_id = home_team_data['id']
+        home_team_name = home_team_data['name']['default']
+        home_team_abbrev = home_team_data['abbrev']
+        home_team_score = home_team_data.get('score')
+        home_team_sog = home_team_data.get('sog')
+        home_team_record = home_team_data.get('record', '')
+        home_team_logo = home_team_data.get('logo', '')
 
-        # Process venue
-        venue = None
+        # Extract away team data
+        away_team_data = game_data['awayTeam']
+        away_team_id = away_team_data['id']
+        away_team_name = away_team_data['name']['default']
+        away_team_abbrev = away_team_data['abbrev']
+        away_team_score = away_team_data.get('score')
+        away_team_sog = away_team_data.get('sog')
+        away_team_record = away_team_data.get('record', '')
+        away_team_logo = away_team_data.get('logo', '')
+
+        # Extract venue info
+        venue_name = ''
         if 'venue' in game_data and game_data['venue']:
             venue_name = game_data['venue']['default']
-            venue, _ = Venue.objects.get_or_create(
-                name=venue_name,
-                defaults={
-                    'timezone': game_data.get('venueTimezone', '')
-                }
-            )
-
-        # Extract score data (if available)
-        home_score = game_data['homeTeam'].get('score')
-        away_score = game_data['awayTeam'].get('score')
-        home_sog = game_data['homeTeam'].get('sog')
-        away_sog = game_data['awayTeam'].get('sog')
-
-        # Extract team records
-        home_record = game_data['homeTeam'].get('record', '')
-        away_record = game_data['awayTeam'].get('record', '')
 
         # Create or update game
         game_defaults = {
             'season': season,
             'game_type': game_type,
             'game_date': game_date,
-            'home_team': home_team,
-            'away_team': away_team,
-            'venue': venue,
+            'home_team_id': home_team_id,
+            'home_team_name': home_team_name,
+            'home_team_abbreviation': home_team_abbrev,
+            'home_team_score': home_team_score,
+            'home_team_sog': home_team_sog,
+            'home_team_record': home_team_record,
+            'home_team_logo_url': home_team_logo,
+            'away_team_id': away_team_id,
+            'away_team_name': away_team_name,
+            'away_team_abbreviation': away_team_abbrev,
+            'away_team_score': away_team_score,
+            'away_team_sog': away_team_sog,
+            'away_team_record': away_team_record,
+            'away_team_logo_url': away_team_logo,
+            'venue_name': venue_name,
             'start_time_utc': start_time_utc,
             'eastern_utc_offset': game_data.get('easternUTCOffset', ''),
             'venue_utc_offset': game_data.get('venueUTCOffset', ''),
@@ -155,12 +149,6 @@ class Command(BaseCommand):
             'game_state': game_data.get('gameState', 'FUT'),
             'game_schedule_state': game_data.get('gameScheduleState', 'OK'),
             'neutral_site': game_data.get('neutralSite', False),
-            'home_team_score': home_score,
-            'away_team_score': away_score,
-            'home_team_sog': home_sog,
-            'away_team_sog': away_sog,
-            'home_team_record': home_record,
-            'away_team_record': away_record,
             'game_center_link': game_data.get('gameCenterLink', ''),
             'tickets_link': game_data.get('ticketsLink', ''),
         }
@@ -170,56 +158,6 @@ class Command(BaseCommand):
             defaults=game_defaults
         )
 
-        # Process TV broadcasts
-        if 'tvBroadcasts' in game_data:
-            # Clear existing broadcasts if updating
-            if not created:
-                game.tv_broadcasts.all().delete()
-
-            for broadcast_data in game_data['tvBroadcasts']:
-                TVBroadcast.objects.create(
-                    game=game,
-                    broadcast_id=broadcast_data['id'],
-                    market=broadcast_data['market'],
-                    country_code=broadcast_data['countryCode'],
-                    network=broadcast_data['network'],
-                    sequence_number=broadcast_data['sequenceNumber']
-                )
-
         action = "Created" if created else "Updated"
         self.stdout.write(f"{action} game: {game}")
         return True
-
-    def _get_or_create_team(self, team_data):
-        """Get or create a team from API data"""
-        team_id = team_data['id']
-        team_name = team_data['name']['default']
-        team_abbrev = team_data['abbrev']
-        logo_url = team_data.get('logo', '')
-
-        team, created = Team.objects.get_or_create(
-            team_id=team_id,
-            defaults={
-                'name': team_name,
-                'abbreviation': team_abbrev,
-                'logo_url': logo_url
-            }
-        )
-
-        # Update team info if it has changed
-        if not created:
-            updated = False
-            if team.name != team_name:
-                team.name = team_name
-                updated = True
-            if team.abbreviation != team_abbrev:
-                team.abbreviation = team_abbrev
-                updated = True
-            if team.logo_url != logo_url:
-                team.logo_url = logo_url
-                updated = True
-            
-            if updated:
-                team.save()
-
-        return team

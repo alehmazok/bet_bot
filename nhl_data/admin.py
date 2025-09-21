@@ -1,29 +1,5 @@
 from django.contrib import admin
-from .models import Team, Venue, Game, TVBroadcast, GameFetchLog
-
-
-@admin.register(Team)
-class TeamAdmin(admin.ModelAdmin):
-    list_display = ['name', 'abbreviation', 'team_id', 'created_at']
-    list_filter = ['created_at']
-    search_fields = ['name', 'abbreviation']
-    readonly_fields = ['created_at', 'updated_at']
-    ordering = ['name']
-
-
-@admin.register(Venue)
-class VenueAdmin(admin.ModelAdmin):
-    list_display = ['name', 'timezone', 'created_at']
-    list_filter = ['created_at']
-    search_fields = ['name']
-    readonly_fields = ['created_at', 'updated_at']
-    ordering = ['name']
-
-
-class TVBroadcastInline(admin.TabularInline):
-    model = TVBroadcast
-    extra = 0
-    readonly_fields = ['created_at']
+from .models import Game
 
 
 @admin.register(Game)
@@ -31,11 +7,10 @@ class GameAdmin(admin.ModelAdmin):
     list_display = [
         'game_id', 
         'game_date', 
-        'away_team', 
-        'home_team', 
+        'away_team_abbreviation', 
+        'home_team_abbreviation', 
         'game_state',
-        'away_team_score',
-        'home_team_score',
+        'score_display',
         'season'
     ]
     list_filter = [
@@ -46,14 +21,15 @@ class GameAdmin(admin.ModelAdmin):
         'neutral_site'
     ]
     search_fields = [
-        'home_team__name', 
-        'away_team__name', 
-        'venue__name'
+        'home_team_name', 
+        'away_team_name', 
+        'home_team_abbreviation',
+        'away_team_abbreviation',
+        'venue_name'
     ]
-    readonly_fields = ['created_at', 'updated_at', 'winner']
+    readonly_fields = ['created_at', 'updated_at', 'winner', 'score_display']
     date_hierarchy = 'game_date'
     ordering = ['-game_date', '-start_time_utc']
-    inlines = [TVBroadcastInline]
     
     fieldsets = (
         ('Basic Information', {
@@ -64,20 +40,36 @@ class GameAdmin(admin.ModelAdmin):
                 'game_date'
             )
         }),
-        ('Teams & Venue', {
+        ('Away Team', {
             'fields': (
-                'away_team', 
-                'home_team', 
-                'venue', 
-                'neutral_site'
+                'away_team_id',
+                'away_team_name',
+                'away_team_abbreviation',
+                'away_team_score',
+                'away_team_sog',
+                'away_team_record',
+                'away_team_logo_url'
             )
         }),
-        ('Timing', {
+        ('Home Team', {
             'fields': (
+                'home_team_id',
+                'home_team_name',
+                'home_team_abbreviation',
+                'home_team_score',
+                'home_team_sog',
+                'home_team_record',
+                'home_team_logo_url'
+            )
+        }),
+        ('Venue & Timing', {
+            'fields': (
+                'venue_name',
                 'start_time_utc',
                 'eastern_utc_offset',
                 'venue_utc_offset', 
-                'venue_timezone'
+                'venue_timezone',
+                'neutral_site'
             )
         }),
         ('Game Status', {
@@ -86,19 +78,10 @@ class GameAdmin(admin.ModelAdmin):
                 'game_schedule_state'
             )
         }),
-        ('Scores & Stats', {
+        ('Game Results', {
             'fields': (
-                'away_team_score',
-                'home_team_score',
-                'away_team_sog',
-                'home_team_sog',
+                'score_display',
                 'winner'
-            )
-        }),
-        ('Team Records', {
-            'fields': (
-                'away_team_record',
-                'home_team_record'
             )
         }),
         ('Links', {
@@ -115,61 +98,13 @@ class GameAdmin(admin.ModelAdmin):
         }),
     )
 
+    def score_display(self, obj):
+        return obj.score_display
+    score_display.short_description = "Score"
+
     def winner(self, obj):
         winner = obj.winner
         if winner:
-            return f"{winner.name} ({winner.abbreviation})"
+            return winner
         return "No winner" if obj.is_final else "Game not final"
     winner.short_description = "Winner"
-
-
-@admin.register(TVBroadcast)
-class TVBroadcastAdmin(admin.ModelAdmin):
-    list_display = [
-        'game', 
-        'network', 
-        'market', 
-        'country_code',
-        'sequence_number'
-    ]
-    list_filter = ['market', 'country_code', 'network']
-    search_fields = ['network', 'game__away_team__name', 'game__home_team__name']
-    readonly_fields = ['created_at']
-    ordering = ['game__game_date', 'sequence_number']
-
-
-@admin.register(GameFetchLog)
-class GameFetchLogAdmin(admin.ModelAdmin):
-    list_display = [
-        'fetch_date', 
-        'fetch_datetime', 
-        'success', 
-        'games_processed',
-        'api_url'
-    ]
-    list_filter = ['success', 'fetch_date']
-    search_fields = ['api_url', 'error_message']
-    readonly_fields = ['fetch_datetime']
-    date_hierarchy = 'fetch_date'
-    ordering = ['-fetch_datetime']
-    
-    fieldsets = (
-        ('Fetch Information', {
-            'fields': (
-                'fetch_date',
-                'fetch_datetime',
-                'api_url'
-            )
-        }),
-        ('Results', {
-            'fields': (
-                'success',
-                'games_processed',
-                'error_message'
-            )
-        }),
-    )
-
-    def has_add_permission(self, request):
-        # Prevent manual creation of fetch logs
-        return False

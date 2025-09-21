@@ -23,8 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
-# Debug toolbar URLs commented out - debug_toolbar not installed
-# if settings.DEBUG:
-#     urlpatterns += [
-#         path('__debug__/', include('debug_toolbar.urls')),
-#     ]
+if settings.DEBUG:
+    urlpatterns += [
+        path('__debug__/', include('debug_toolbar.urls')),
+    ]
