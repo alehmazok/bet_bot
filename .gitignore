@@ -1,0 +1,15 @@
+# Environments
+ENV/
+
+# Databases
+db.sqlite3
+
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
