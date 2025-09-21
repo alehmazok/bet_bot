@@ -1,18 +1,19 @@
 import logging
 from datetime import date
 from django.conf import settings
+from django.template.loader import get_template
 from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from nhl_data.models import Game
-from .template_loader import template_loader
 
 logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends a message when the command /start is issued."""
-    message = template_loader.render_template("start")
+    template = get_template('telegram_bot/start.txt')
+    message = template.render()
     await update.message.reply_text(message)
 
 
@@ -31,17 +32,24 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             ]  # Limit to 10 games
         )
 
-        # Use template loader to format the message
-        message = template_loader.render_schedule_message(
-            future_games, 
-            current_date.strftime('%d.%m.%Y')
-        )
+        if not future_games:
+            # Use empty schedule template
+            template = get_template('telegram_bot/schedule_empty.txt')
+            message = template.render()
+        else:
+            # Use schedule template with context
+            template = get_template('telegram_bot/schedule.txt')
+            message = template.render({
+                'current_date': current_date.strftime('%d.%m.%Y'),
+                'games': future_games
+            })
         
         await update.message.reply_text(message, parse_mode="Markdown")
 
     except Exception as e:
         logger.error(f"Error in schedule command: {str(e)}")
-        error_message = template_loader.render_template("schedule_error")
+        template = get_template('telegram_bot/schedule_error.txt')
+        error_message = template.render()
         await update.message.reply_text(error_message)
 
 

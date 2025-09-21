@@ -1,1 +1,0 @@
-🏒 **Upcoming NHL Games - {{ current_date }}**

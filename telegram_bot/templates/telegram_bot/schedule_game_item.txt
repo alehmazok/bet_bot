@@ -1,1 +1,0 @@
-**{{ game_number }}.** {{ away_team }} @ {{ home_team }} - {{ game_time }}
