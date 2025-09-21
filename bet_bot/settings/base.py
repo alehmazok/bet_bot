@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'telegram_bot',
+    'nhl_data',
 ]
 
 MIDDLEWARE = [
