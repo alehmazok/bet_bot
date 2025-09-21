@@ -5,13 +5,15 @@ from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from nhl_data.models import Game
+from .template_loader import template_loader
 
 logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends a message when the command /start is issued."""
-    await update.message.reply_text("Hello! I am your bot.")
+    message = template_loader.render_template("start")
+    await update.message.reply_text(message)
 
 
 async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -29,33 +31,18 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             ]  # Limit to 10 games
         )
 
-        if not future_games:
-            await update.message.reply_text("No upcoming games scheduled.")
-            return
-
-        # Format the games list
-        message_lines = [
-            f"🏒 **Upcoming NHL Games - {current_date.strftime('%d.%m.%Y')}**\n"
-        ]
-
-        for i, game in enumerate(future_games):
-            # Convert UTC time to a more readable format
-            local_time = game.start_time_utc.strftime("%H:%M UTC")
-
-            # Create game line
-            game_line = f"**{i+1}.** {game.away_team_abbreviation} @ {game.home_team_abbreviation} - {local_time}"
-
-            message_lines.append(game_line)
-
-        # Join all lines and send
-        message = "\n".join(message_lines)
+        # Use template loader to format the message
+        message = template_loader.render_schedule_message(
+            future_games, 
+            current_date.strftime('%d.%m.%Y')
+        )
+        
         await update.message.reply_text(message, parse_mode="Markdown")
 
     except Exception as e:
         logger.error(f"Error in schedule command: {str(e)}")
-        await update.message.reply_text(
-            "Sorry, I couldn't retrieve the schedule right now. Please try again later."
-        )
+        error_message = template_loader.render_template("schedule_error")
+        await update.message.reply_text(error_message)
 
 
 def main() -> None:
