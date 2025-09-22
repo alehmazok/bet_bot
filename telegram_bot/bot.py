@@ -1,6 +1,7 @@
 import logging
 from datetime import date
 from django.conf import settings
+from django.template.loader import get_template
 from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -11,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends a message when the command /start is issued."""
-    await update.message.reply_text("Hello! I am your bot.")
+    template = get_template('telegram_bot/start.txt')
+    message = template.render()
+    await update.message.reply_text(message)
 
 
 async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -30,32 +33,24 @@ async def schedule(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
         if not future_games:
-            await update.message.reply_text("No upcoming games scheduled.")
-            return
-
-        # Format the games list
-        message_lines = [
-            f"🏒 **Upcoming NHL Games - {current_date.strftime('%d.%m.%Y')}**\n"
-        ]
-
-        for i, game in enumerate(future_games):
-            # Convert UTC time to a more readable format
-            local_time = game.start_time_utc.strftime("%H:%M UTC")
-
-            # Create game line
-            game_line = f"**{i+1}.** {game.away_team_abbreviation} @ {game.home_team_abbreviation} - {local_time}"
-
-            message_lines.append(game_line)
-
-        # Join all lines and send
-        message = "\n".join(message_lines)
+            # Use empty schedule template
+            template = get_template('telegram_bot/schedule_empty.txt')
+            message = template.render()
+        else:
+            # Use schedule template with context
+            template = get_template('telegram_bot/schedule.txt')
+            message = template.render({
+                'current_date': current_date.strftime('%d.%m.%Y'),
+                'games': future_games
+            })
+        
         await update.message.reply_text(message, parse_mode="Markdown")
 
     except Exception as e:
         logger.error(f"Error in schedule command: {str(e)}")
-        await update.message.reply_text(
-            "Sorry, I couldn't retrieve the schedule right now. Please try again later."
-        )
+        template = get_template('telegram_bot/schedule_error.txt')
+        error_message = template.render()
+        await update.message.reply_text(error_message)
 
 
 def main() -> None:

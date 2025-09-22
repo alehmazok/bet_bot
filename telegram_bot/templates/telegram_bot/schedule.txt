@@ -1,0 +1,5 @@
+🏒 **Upcoming NHL Games - {{ current_date }}**
+
+{% for game in games %}
+**{{ forloop.counter }}.** {{ game.away_team_abbreviation }} @ {{ game.home_team_abbreviation }} - {{ game.start_time_utc|date:"H:i" }} UTC
+{% endfor %}
