@@ -3,16 +3,14 @@
 📊 **Statistics:**
 • Total Users: {{ total_users }}
 • Active (30d): {{ active_users }}
-• Premium: {{ premium_users }}
-• Verified: {{ verified_users }}
+# Note: Premium and verified counts removed
 
 📋 **Users (Page {{ current_page }}/{{ total_pages }}):**
 {% for user in users %}
 {{ forloop.counter }}. **{{ user.full_name }}**
    ID: `{{ user.telegram_id }}`
    Username: @{{ user.username|default:"N/A" }}
-   Language: {{ user.language_code|default:"N/A" }}
-   Status: {% if user.is_premium %}⭐ Premium{% endif %}{% if user.is_verified %} ✓ Verified{% endif %}{% if user.is_bot %} 🤖 Bot{% endif %}{% if not user.is_premium and not user.is_verified and not user.is_bot %}👤 Regular{% endif %}
+   # Note: Language and status information removed
    Last Seen: {{ user.last_seen|date:"M d, Y H:i" }}
    Joined: {{ user.created_at|date:"M d, Y" }}
 

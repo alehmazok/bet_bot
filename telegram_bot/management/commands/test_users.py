@@ -9,15 +9,12 @@ from telegram_bot.models import TelegramUser
 class MockTelegramUser:
     """Mock Telegram User object for testing."""
     
-    def __init__(self, user_id, first_name=None, last_name=None, username=None, 
-                 language_code='en', is_bot=False):
+    def __init__(self, user_id, first_name=None, last_name=None, username=None):
         self.id = user_id
         self.first_name = first_name
         self.last_name = last_name
         self.username = username
-        self.language_code = language_code
-        self.is_bot = is_bot
-        # Note: is_premium and is_verified removed as per requirements
+        # Note: is_premium, is_verified, language_code, and is_bot removed as per requirements
 
 
 class Command(BaseCommand):
@@ -80,9 +77,7 @@ class Command(BaseCommand):
             user_id=123456789,
             first_name="John",
             last_name="Doe",
-            username="johndoe",
-            language_code="en",
-            is_bot=False,
+            username="johndoe"
         )
         
         try:
@@ -92,7 +87,7 @@ class Command(BaseCommand):
             self.stdout.write(f"✅ User ID: {user.telegram_id}")
             self.stdout.write(f"✅ Full name: {user.full_name}")
             self.stdout.write(f"✅ Username: @{user.username}")
-            self.stdout.write(f"✅ Language: {user.language_code}")
+            # Note: Language display removed as language_code field was removed
             self.stdout.write(f"✅ Created at: {user.created_at}")
             
         except Exception as e:
@@ -108,9 +103,7 @@ class Command(BaseCommand):
             user_id=123456789,  # Same ID as before
             first_name="John",
             last_name="Smith",  # Changed last name
-            username="johnsmith",  # Changed username
-            language_code="en",
-            is_bot=False,
+            username="johnsmith"  # Changed username
         )
         
         try:
@@ -167,9 +160,9 @@ class Command(BaseCommand):
         self.stdout.write('\nTesting multiple users...')
         
         users_data = [
-            (987654321, "Alice", "Johnson", "alice", "en", False),
-            (456789123, "Bob", "Wilson", "bob", "en", False),
-            (789123456, "Charlie", "Brown", "charlie", "es", False),
+            (987654321, "Alice", "Johnson", "alice"),
+            (456789123, "Bob", "Wilson", "bob"),
+            (789123456, "Charlie", "Brown", "charlie"),
         ]
         
         for user_data in users_data:

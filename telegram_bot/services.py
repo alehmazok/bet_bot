@@ -34,8 +34,6 @@ class TelegramUserService:
                         'first_name': telegram_user.first_name,
                         'last_name': telegram_user.last_name,
                         'username': telegram_user.username,
-                        'language_code': telegram_user.language_code,
-                        'is_bot': telegram_user.is_bot,
                     }
                 )
                 
@@ -56,15 +54,9 @@ class TelegramUserService:
                         user.username = telegram_user.username
                         updated = True
                     
-                    if user.language_code != telegram_user.language_code:
-                        user.language_code = telegram_user.language_code
-                        updated = True
+                    # Note: language_code and is_bot tracking removed as per requirements
                     
-                    if user.is_bot != telegram_user.is_bot:
-                        user.is_bot = telegram_user.is_bot
-                        updated = True
-                    
-                    # Note: is_premium and is_verified tracking removed as per requirements
+                    # Note: is_premium, is_verified, language_code, and is_bot tracking removed as per requirements
                     
                     if updated:
                         user.save()
