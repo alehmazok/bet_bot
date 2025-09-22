@@ -124,12 +124,16 @@ class TelegramUserService:
             return {
                 'total_users': total_users,
                 'active_users_30d': active_users,
+                'premium_users': 0,  # Not implemented yet
+                'verified_users': 0,  # Not implemented yet
             }
         except Exception as e:
             logger.error(f"Error getting user stats: {str(e)}")
             return {
                 'total_users': 0,
                 'active_users_30d': 0,
+                'premium_users': 0,
+                'verified_users': 0,
             }
     
     @staticmethod
