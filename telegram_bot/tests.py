@@ -317,38 +317,41 @@ class TelegramBotHandlersTest(TestCase):
     @pytest.mark.asyncio
     async def test_register_user_success(self):
         """Test successful user registration."""
-        with patch('telegram_bot.bot.TelegramUserService.get_or_create_user') as mock_service:
-            mock_service.return_value = (Mock(), True)
+        with patch('telegram_bot.bot.sync_to_async') as mock_sync_async:
+            # Mock the sync_to_async wrapper
+            mock_user = Mock()
+            mock_user.telegram_id = 123456789
+            mock_sync_async.return_value = Mock(return_value=(mock_user, True))
             
             await register_user(self.mock_update, self.mock_context)
             
-            mock_service.assert_called_once_with(self.mock_telegram_user)
+            mock_sync_async.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_register_user_no_user(self):
         """Test user registration when no user in update."""
         self.mock_update.effective_user = None
         
-        with patch('telegram_bot.bot.TelegramUserService.get_or_create_user') as mock_service:
+        with patch('telegram_bot.bot.sync_to_async') as mock_sync_async:
             await register_user(self.mock_update, self.mock_context)
             
-            mock_service.assert_not_called()
+            mock_sync_async.assert_not_called()
     
     @pytest.mark.asyncio
     async def test_register_user_exception(self):
         """Test user registration with exception."""
-        with patch('telegram_bot.bot.TelegramUserService.get_or_create_user') as mock_service:
-            mock_service.side_effect = Exception("Database error")
+        with patch('telegram_bot.bot.sync_to_async') as mock_sync_async:
+            mock_sync_async.side_effect = Exception("Database error")
             
             # Should not raise exception
             await register_user(self.mock_update, self.mock_context)
             
-            mock_service.assert_called_once()
+            mock_sync_async.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_start_command(self):
         """Test /start command handler."""
-        with patch('telegram_bot.bot.register_user') as mock_register, \
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register, \
              patch('telegram_bot.bot.get_template') as mock_template:
             
             mock_template_instance = Mock()
@@ -373,7 +376,7 @@ class TelegramBotHandlersTest(TestCase):
             Mock(spec=Game)
         ]
         
-        with patch('telegram_bot.bot.register_user') as mock_register, \
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register, \
              patch('telegram_bot.bot.sync_to_async') as mock_sync_async, \
              patch('telegram_bot.bot.get_template') as mock_template:
             
@@ -396,7 +399,7 @@ class TelegramBotHandlersTest(TestCase):
     @pytest.mark.asyncio
     async def test_schedule_command_no_games(self):
         """Test /schedule command with no games."""
-        with patch('telegram_bot.bot.register_user') as mock_register, \
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register, \
              patch('telegram_bot.bot.sync_to_async') as mock_sync_async, \
              patch('telegram_bot.bot.get_template') as mock_template:
             
@@ -419,7 +422,7 @@ class TelegramBotHandlersTest(TestCase):
     @pytest.mark.asyncio
     async def test_schedule_command_exception(self):
         """Test /schedule command with exception."""
-        with patch('telegram_bot.bot.register_user') as mock_register, \
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register, \
              patch('telegram_bot.bot.sync_to_async') as mock_sync_async, \
              patch('telegram_bot.bot.get_template') as mock_template:
             
@@ -438,7 +441,7 @@ class TelegramBotHandlersTest(TestCase):
         """Test /users command with page 1."""
         self.mock_context.args = []
         
-        with patch('telegram_bot.bot.register_user') as mock_register, \
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register, \
              patch('telegram_bot.bot.sync_to_async') as mock_sync_async, \
              patch('telegram_bot.bot.get_template') as mock_template:
             
@@ -474,7 +477,7 @@ class TelegramBotHandlersTest(TestCase):
         """Test /users command with specific page."""
         self.mock_context.args = ['2']
         
-        with patch('telegram_bot.bot.register_user') as mock_register, \
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register, \
              patch('telegram_bot.bot.sync_to_async') as mock_sync_async, \
              patch('telegram_bot.bot.get_template') as mock_template:
             
@@ -521,7 +524,7 @@ class TelegramBotHandlersTest(TestCase):
     @pytest.mark.asyncio
     async def test_handle_message(self):
         """Test handle_message function."""
-        with patch('telegram_bot.bot.register_user') as mock_register:
+        with patch('telegram_bot.bot.register_user', new_callable=AsyncMock) as mock_register:
             await handle_message(self.mock_update, self.mock_context)
             
             mock_register.assert_called_once_with(self.mock_update, self.mock_context)
