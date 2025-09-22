@@ -8,11 +8,10 @@ class TelegramUserAdmin(admin.ModelAdmin):
     """Admin interface for Telegram users."""
     
     list_display = [
-        'telegram_id', 'username', 'full_name', 'language_code', 
-        'is_premium', 'is_verified', 'created_at', 'last_seen'
+        'telegram_id', 'username', 'full_name', 
+        'created_at', 'last_seen'
     ]
     list_filter = [
-        'is_bot', 'is_premium', 'is_verified', 'language_code', 
         'created_at', 'last_seen'
     ]
     search_fields = ['telegram_id', 'username', 'first_name', 'last_name']
@@ -22,9 +21,6 @@ class TelegramUserAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Basic Information', {
             'fields': ('telegram_id', 'first_name', 'last_name', 'username')
-        }),
-        ('Settings', {
-            'fields': ('language_code', 'is_bot', 'is_premium', 'is_verified')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'last_seen'),

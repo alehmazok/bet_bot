@@ -34,10 +34,6 @@ class TelegramUserService:
                         'first_name': telegram_user.first_name,
                         'last_name': telegram_user.last_name,
                         'username': telegram_user.username,
-                        'language_code': telegram_user.language_code,
-                        'is_bot': telegram_user.is_bot,
-                        'is_premium': getattr(telegram_user, 'is_premium', False),
-                        'is_verified': getattr(telegram_user, 'is_verified', False),
                     }
                 )
                 
@@ -56,26 +52,6 @@ class TelegramUserService:
                     
                     if user.username != telegram_user.username:
                         user.username = telegram_user.username
-                        updated = True
-                    
-                    if user.language_code != telegram_user.language_code:
-                        user.language_code = telegram_user.language_code
-                        updated = True
-                    
-                    if user.is_bot != telegram_user.is_bot:
-                        user.is_bot = telegram_user.is_bot
-                        updated = True
-                    
-                    # Update premium status if available
-                    is_premium = getattr(telegram_user, 'is_premium', False)
-                    if user.is_premium != is_premium:
-                        user.is_premium = is_premium
-                        updated = True
-                    
-                    # Update verified status if available
-                    is_verified = getattr(telegram_user, 'is_verified', False)
-                    if user.is_verified != is_verified:
-                        user.is_verified = is_verified
                         updated = True
                     
                     if updated:
@@ -144,22 +120,16 @@ class TelegramUserService:
             active_users = TelegramUserModel.objects.filter(
                 last_seen__gte=timezone.now() - timezone.timedelta(days=30)
             ).count()
-            premium_users = TelegramUserModel.objects.filter(is_premium=True).count()
-            verified_users = TelegramUserModel.objects.filter(is_verified=True).count()
             
             return {
                 'total_users': total_users,
                 'active_users_30d': active_users,
-                'premium_users': premium_users,
-                'verified_users': verified_users,
             }
         except Exception as e:
             logger.error(f"Error getting user stats: {str(e)}")
             return {
                 'total_users': 0,
                 'active_users_30d': 0,
-                'premium_users': 0,
-                'verified_users': 0,
             }
     
     @staticmethod
@@ -183,3 +153,4 @@ class TelegramUserService:
         except Exception as e:
             logger.error(f"Error getting users list: {str(e)}")
             return [], 0
+          
