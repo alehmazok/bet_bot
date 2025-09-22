@@ -2,7 +2,7 @@
 Services for handling Telegram user operations.
 """
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from django.db import transaction
 from django.utils import timezone
 from telegram import User as TelegramUser
@@ -144,3 +144,26 @@ class TelegramUserService:
                 'total_users': 0,
                 'active_users_30d': 0,
             }
+    
+    @staticmethod
+    def get_users_list(page: int = 1, page_size: int = 20) -> Tuple[List[TelegramUserModel], int]:
+        """
+        Get a paginated list of users.
+        
+        Args:
+            page: Page number (1-based)
+            page_size: Number of users per page
+            
+        Returns:
+            Tuple of (list of users, total count)
+        """
+        try:
+            offset = (page - 1) * page_size
+            users = list(TelegramUserModel.objects.all().order_by('-created_at')[offset:offset + page_size])
+            total_count = TelegramUserModel.objects.count()
+            
+            return users, total_count
+        except Exception as e:
+            logger.error(f"Error getting users list: {str(e)}")
+            return [], 0
+          
