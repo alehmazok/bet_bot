@@ -22,7 +22,6 @@ class TelegramUserAdmin(admin.ModelAdmin):
         ('Basic Information', {
             'fields': ('telegram_id', 'first_name', 'last_name', 'username')
         }),
-        # Note: Settings section removed as language_code and is_bot fields were removed
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'last_seen'),
             'classes': ('collapse',)

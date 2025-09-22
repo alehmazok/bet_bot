@@ -14,7 +14,6 @@ class MockTelegramUser:
         self.first_name = first_name
         self.last_name = last_name
         self.username = username
-        # Note: is_premium, is_verified, language_code, and is_bot removed as per requirements
 
 
 class Command(BaseCommand):
@@ -87,7 +86,6 @@ class Command(BaseCommand):
             self.stdout.write(f"✅ User ID: {user.telegram_id}")
             self.stdout.write(f"✅ Full name: {user.full_name}")
             self.stdout.write(f"✅ Username: @{user.username}")
-            # Note: Language display removed as language_code field was removed
             self.stdout.write(f"✅ Created at: {user.created_at}")
             
         except Exception as e:
@@ -112,7 +110,6 @@ class Command(BaseCommand):
             self.stdout.write(f"✅ User created: {created} (should be False)")
             self.stdout.write(f"✅ Updated name: {user.full_name}")
             self.stdout.write(f"✅ Updated username: @{user.username}")
-            # Note: Premium and verified status tracking removed
             self.stdout.write(f"✅ Updated at: {user.updated_at}")
             
         except Exception as e:
@@ -148,7 +145,6 @@ class Command(BaseCommand):
             
             self.stdout.write(f"✅ Total users: {stats['total_users']}")
             self.stdout.write(f"✅ Active users (30d): {stats['active_users_30d']}")
-            # Note: Premium and verified user counts removed
             
         except Exception as e:
             self.stdout.write(

@@ -15,15 +15,10 @@ class TelegramUser(models.Model):
     # Username (without @)
     username = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     
-    # Note: language_code and is_bot fields removed as per requirements
-    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_seen = models.DateTimeField(default=timezone.now)
-    
-    # Additional metadata
-    # Note: is_premium, is_verified, language_code, and is_bot fields removed as per requirements
     
     class Meta:
         db_table = 'telegram_users'

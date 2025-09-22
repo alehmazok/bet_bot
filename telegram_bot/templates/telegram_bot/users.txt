@@ -3,14 +3,12 @@
 📊 **Statistics:**
 • Total Users: {{ total_users }}
 • Active (30d): {{ active_users }}
-# Note: Premium and verified counts removed
 
 📋 **Users (Page {{ current_page }}/{{ total_pages }}):**
 {% for user in users %}
 {{ forloop.counter }}. **{{ user.full_name }}**
    ID: `{{ user.telegram_id }}`
    Username: @{{ user.username|default:"N/A" }}
-   # Note: Language and status information removed
    Last Seen: {{ user.last_seen|date:"M d, Y H:i" }}
    Joined: {{ user.created_at|date:"M d, Y" }}
 

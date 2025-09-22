@@ -54,10 +54,6 @@ class TelegramUserService:
                         user.username = telegram_user.username
                         updated = True
                     
-                    # Note: language_code and is_bot tracking removed as per requirements
-                    
-                    # Note: is_premium, is_verified, language_code, and is_bot tracking removed as per requirements
-                    
                     if updated:
                         user.save()
                     
@@ -124,7 +120,6 @@ class TelegramUserService:
             active_users = TelegramUserModel.objects.filter(
                 last_seen__gte=timezone.now() - timezone.timedelta(days=30)
             ).count()
-            # Note: premium and verified user counts removed as per requirements
             
             return {
                 'total_users': total_users,

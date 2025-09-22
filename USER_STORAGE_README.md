@@ -23,7 +23,6 @@ class TelegramUser(models.Model):
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=255, blank=True, null=True, db_index=True)
-    # Note: is_premium, is_verified, language_code, and is_bot fields removed as per requirements
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_seen = models.DateTimeField(default=timezone.now)
