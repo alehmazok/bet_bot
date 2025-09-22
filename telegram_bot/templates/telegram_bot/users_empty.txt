@@ -1,0 +1,7 @@
+👥 **Saved Users List**
+
+📊 **No users found in the database.**
+
+The bot hasn't registered any users yet. Users will be automatically added when they interact with the bot using any command or send a message.
+
+Try using `/start` or `/schedule` commands to register users first.
