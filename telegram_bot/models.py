@@ -27,8 +27,7 @@ class TelegramUser(models.Model):
     last_seen = models.DateTimeField(default=timezone.now)
     
     # Additional metadata
-    is_premium = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)
+    # Note: is_premium and is_verified fields removed as per requirements
     
     class Meta:
         db_table = 'telegram_users'

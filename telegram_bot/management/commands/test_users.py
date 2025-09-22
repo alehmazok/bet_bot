@@ -10,15 +10,14 @@ class MockTelegramUser:
     """Mock Telegram User object for testing."""
     
     def __init__(self, user_id, first_name=None, last_name=None, username=None, 
-                 language_code='en', is_bot=False, is_premium=False, is_verified=False):
+                 language_code='en', is_bot=False):
         self.id = user_id
         self.first_name = first_name
         self.last_name = last_name
         self.username = username
         self.language_code = language_code
         self.is_bot = is_bot
-        self.is_premium = is_premium
-        self.is_verified = is_verified
+        # Note: is_premium and is_verified removed as per requirements
 
 
 class Command(BaseCommand):
@@ -84,8 +83,6 @@ class Command(BaseCommand):
             username="johndoe",
             language_code="en",
             is_bot=False,
-            is_premium=False,
-            is_verified=False
         )
         
         try:
@@ -114,8 +111,6 @@ class Command(BaseCommand):
             username="johnsmith",  # Changed username
             language_code="en",
             is_bot=False,
-            is_premium=True,  # Now premium
-            is_verified=True  # Now verified
         )
         
         try:
@@ -124,8 +119,7 @@ class Command(BaseCommand):
             self.stdout.write(f"✅ User created: {created} (should be False)")
             self.stdout.write(f"✅ Updated name: {user.full_name}")
             self.stdout.write(f"✅ Updated username: @{user.username}")
-            self.stdout.write(f"✅ Is premium: {user.is_premium}")
-            self.stdout.write(f"✅ Is verified: {user.is_verified}")
+            # Note: Premium and verified status tracking removed
             self.stdout.write(f"✅ Updated at: {user.updated_at}")
             
         except Exception as e:
@@ -161,8 +155,7 @@ class Command(BaseCommand):
             
             self.stdout.write(f"✅ Total users: {stats['total_users']}")
             self.stdout.write(f"✅ Active users (30d): {stats['active_users_30d']}")
-            self.stdout.write(f"✅ Premium users: {stats['premium_users']}")
-            self.stdout.write(f"✅ Verified users: {stats['verified_users']}")
+            # Note: Premium and verified user counts removed
             
         except Exception as e:
             self.stdout.write(
@@ -174,9 +167,9 @@ class Command(BaseCommand):
         self.stdout.write('\nTesting multiple users...')
         
         users_data = [
-            (987654321, "Alice", "Johnson", "alice", "en", False, True, False),
-            (456789123, "Bob", "Wilson", "bob", "en", False, False, True),
-            (789123456, "Charlie", "Brown", "charlie", "es", False, False, False),
+            (987654321, "Alice", "Johnson", "alice", "en", False),
+            (456789123, "Bob", "Wilson", "bob", "en", False),
+            (789123456, "Charlie", "Brown", "charlie", "es", False),
         ]
         
         for user_data in users_data:

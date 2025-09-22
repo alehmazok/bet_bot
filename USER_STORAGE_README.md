@@ -25,8 +25,7 @@ class TelegramUser(models.Model):
     username = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     language_code = models.CharField(max_length=10, blank=True, null=True)
     is_bot = models.BooleanField(default=False)
-    is_premium = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)
+    # Note: is_premium and is_verified fields removed as per requirements
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_seen = models.DateTimeField(default=timezone.now)
@@ -114,21 +113,20 @@ python test_user_storage.py
 - **Name**: First name and last name
 - **Username**: Telegram username (without @)
 - **Language**: User's language code
-- **Status**: Bot, premium, verified flags
+- **Status**: Bot flag
 - **Timestamps**: Created, updated, last seen
 
 ### Automatic Updates
 
 - User information is updated when it changes
 - Last seen timestamp is updated on every interaction
-- Premium and verified status are tracked
+- User information is kept up to date
 
 ### Analytics
 
 - Total user count
 - Active users (last 30 days)
-- Premium user count
-- Verified user count
+- User engagement statistics
 
 ## Security Considerations
 
